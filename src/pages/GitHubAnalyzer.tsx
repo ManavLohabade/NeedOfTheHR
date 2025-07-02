@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Loader2, User, Star, GitBranch, Calendar, MapPin, Building, Users, BookOpen, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -530,15 +530,17 @@ ${resumeAnalysis.recommendations?.map((rec: string) => `• ${rec}`).join('\n') 
         // Analyze resume with ChatGPT
         try {
           const analysis = await analyzeResumeWithChatGPT(file);
+          console.log("Analysis result:", analysis);
           setResumeAnalysis(analysis);
           toast({
             title: "Resume Analysis Complete",
             description: "ChatGPT has successfully analyzed your resume!",
           });
         } catch (error) {
+          console.error("Resume analysis error (catch block):", error);
           toast({
             title: "Resume Analysis Failed",
-            description: "Unable to analyze resume with ChatGPT. Please try again.",
+            description: error instanceof Error ? error.message : "Unable to analyze resume with ChatGPT. Please try again.",
             variant: "destructive",
           });
         }
@@ -642,6 +644,30 @@ ${resumeAnalysis.recommendations?.map((rec: string) => `• ${rec}`).join('\n') 
       return part;
     });
   };
+
+  useEffect(() => {
+    console.log("resumeAnalysis state changed:", resumeAnalysis);
+  }, [resumeAnalysis]);
+
+  useEffect(() => {
+    console.log("scoreCard state changed:", scoreCard);
+  }, [scoreCard]);
+
+  useEffect(() => {
+    console.log("isAnalyzing state changed:", isAnalyzing);
+  }, [isAnalyzing]);
+
+  useEffect(() => {
+    if (profile && repositories && scoreCard) {
+      // Recalculate scoreCard whenever resumeAnalysis, linkedinUrl, or epfoNumber changes
+      const updatedScoreCard = calculateScores(profile, repositories, resumeAnalysis, linkedinUrl, epfoNumber);
+      setScoreCard(updatedScoreCard);
+    }
+  }, [resumeAnalysis, profile, repositories, linkedinUrl, epfoNumber]);
+
+  if (resumeAnalysis) {
+    console.log("Rendering resumeAnalysis:", resumeAnalysis);
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
@@ -985,19 +1011,41 @@ ${resumeAnalysis.recommendations?.map((rec: string) => `• ${rec}`).join('\n') 
                       </div>
 
                       {/* Resume Score Card */}
-                      {scoreCard.resume ? (
+                      {resumeAnalysis ? (
                         <div className="border border-gray-200 rounded-lg p-5 bg-gradient-to-br from-gray-50 to-white">
                           <div className="flex justify-between items-center mb-3">
                             <h3 className="font-semibold text-gray-900">Resume</h3>
-                            <Badge className="bg-green-100 text-green-800">{scoreCard.resume.grade}</Badge>
+                            <Badge className="bg-green-100 text-green-800">{scoreCard?.resume?.grade || "-"}</Badge>
                           </div>
-                          <div className="text-3xl font-bold text-green-600 mb-3">{scoreCard.resume.score}<span className="text-sm text-gray-500">/100</span></div>
-                          
+                          <div className="text-3xl font-bold text-green-600 mb-3">{scoreCard?.resume?.score ?? "-"}<span className="text-sm text-gray-500">/100</span></div>
                           <div className="space-y-3 mt-4">
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-700 mb-1">Summary</h4>
+                              <p className="text-xs text-gray-700">{resumeAnalysis.summary || "N/A"}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-700 mb-1">Experience</h4>
+                              <p className="text-xs text-gray-700">{resumeAnalysis.experience || "N/A"}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-700 mb-1">Education</h4>
+                              <p className="text-xs text-gray-700">{resumeAnalysis.education || "N/A"}</p>
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-700 mb-1">Skills</h4>
+                              <ul className="text-xs space-y-1 columns-2 md:columns-3">
+                                {(resumeAnalysis.skills || []).map((skill, idx) => (
+                                  <li key={idx} className="text-gray-600 flex items-start">
+                                    <div className="w-1 h-1 bg-emerald-500 rounded-full mt-1.5 mr-1.5"></div>
+                                    {skill}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
                             <div>
                               <h4 className="text-sm font-medium text-gray-700 mb-1">Strengths</h4>
                               <ul className="text-xs space-y-1">
-                                {scoreCard.resume.strengths.map((strength, idx) => (
+                                {(resumeAnalysis.strengths || []).map((strength, idx) => (
                                   <li key={idx} className="text-gray-600 flex items-start">
                                     <div className="w-1 h-1 bg-emerald-500 rounded-full mt-1.5 mr-1.5"></div>
                                     {strength}
@@ -1005,7 +1053,7 @@ ${resumeAnalysis.recommendations?.map((rec: string) => `• ${rec}`).join('\n') 
                                 ))}
                               </ul>
                             </div>
-                            {scoreCard.resume.weaknesses.length > 0 && (
+                            {scoreCard?.resume?.weaknesses?.length > 0 && (
                               <div>
                                 <h4 className="text-sm font-medium text-gray-700 mb-1">Areas for Improvement</h4>
                                 <ul className="text-xs space-y-1">
@@ -1018,6 +1066,17 @@ ${resumeAnalysis.recommendations?.map((rec: string) => `• ${rec}`).join('\n') 
                                 </ul>
                               </div>
                             )}
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-700 mb-1">Recommendations</h4>
+                              <ul className="text-xs space-y-1">
+                                {(resumeAnalysis.recommendations || []).map((rec, idx) => (
+                                  <li key={idx} className="text-gray-600 flex items-start">
+                                    <div className="w-1 h-1 bg-blue-500 rounded-full mt-1.5 mr-1.5"></div>
+                                    {rec}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
                           </div>
                         </div>
                       ) : (
