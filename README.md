@@ -1,8 +1,5 @@
 # 🚀 NeedOfTheHR - AI-Powered HR Assistant
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
-
 ## 🌟 Overview
 
 NeedOfTheHR is an innovative AI-powered HR assistant that revolutionizes the recruitment process. It leverages cutting-edge AI technologies to analyze resumes, evaluate candidates, and streamline the hiring workflow.
@@ -62,8 +59,7 @@ NeedOfTheHR is an innovative AI-powered HR assistant that revolutionizes the rec
 2. Install dependencies:
    ```bash
    npm install
-   # or
-   yarn install
+
    ```
 
 3. Set up environment variables:
@@ -114,18 +110,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Authors
 
-- **Manav Lohabade** - *Initial work* - [ManavLohabade](https://github.com/ManavLohabade)
+- **Manav Lohabade** - [ManavLohabade](https://github.com/ManavLohabade)
 
 ## 🙏 Acknowledgments
 
 - OpenAI for providing the GPT API
 - Supabase for the backend infrastructure
 - All contributors who have helped shape this project
-
-## 📞 Support
-
-For support, email manavlohabade26@gmail.com or open an issue in the repository.
-
----
 
 Made with ❤️ by Manav Lohabade
